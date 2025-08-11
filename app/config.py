@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     APP_ENV: str = "prod"
     LOG_LEVEL: str = "INFO"
-    REQUEST_TIMEOUT_S: float = 25.0
+    REQUEST_TIMEOUT_S: float = 40.0
     GRAPH_MAX_RESULTS: int = 7
     GRAPH_MAX_RADIUS_M: int = 10000
 

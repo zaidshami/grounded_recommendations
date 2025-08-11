@@ -19,6 +19,8 @@ PROMPT = (
 
 async def extract_reason_and_sentiment(payload: Dict[str, Any]) -> Dict[str, str]:
     text = payload.get("joined_context", "")
+    print('joined text '+text)
+
     msg = f"{PROMPT}\n---\nSources:\n{text}\n---"
     def _call():
         return _llm.invoke(msg).content or "{}"

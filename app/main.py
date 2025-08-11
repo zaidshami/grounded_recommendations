@@ -13,7 +13,7 @@ from app.security.auth import api_key_guard
 log = configure_logging(settings.LOG_LEVEL)
 graph = build_graph()
 
-app = FastAPI(title="Local Recommendation API (Complex Flow + LangChain)", version="1.0.0")
+app = FastAPI(title="Local Recommendation API ( Vertex AI + LangChain)", version="1.0.0")
 #
 @app.middleware("http")
 async def add_request_context(request: Request, call_next):
@@ -34,7 +34,7 @@ async def healthz():
 @app.post("/v1/recommendations", response_model=RecResponse, dependencies=[Depends(api_key_guard)])
 async def recommend(res: Reservation):
 
-    # print(_access_token())
+
     if res.radius_m > settings.GRAPH_MAX_RADIUS_M:
         res.radius_m = settings.GRAPH_MAX_RADIUS_M
     try:
@@ -50,10 +50,5 @@ async def recommend(res: Reservation):
         return RecResponse(reservation_id=res.reservation_id, criteria=criteria, results=places)
     except asyncio.TimeoutError:
         raise HTTPException(504, "Recommendation timed out")
-import json, httpx, google.auth
 
-def _access_token() -> str:
-    creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
-    if not creds.valid:
-        creds.refresh(Request())
-    return creds.token
+

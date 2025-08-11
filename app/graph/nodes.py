@@ -254,7 +254,7 @@ async def node_hybrid_recos(state: Dict[str, Any]) -> Dict[str, Any]:
         f"Longitude : { res.location.lng} \n'"
         f"Travel reason: {reason}\n"
         f"Sentiment: {sentiment}\n"
-        "Return JSON ONLY : {"
+        " Return JSON ONLY : {"
         "\"results\": [{"
         "\"name\": \"str\","
         "\"maps_url\": \"str\","
