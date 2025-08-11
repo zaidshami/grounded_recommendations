@@ -227,6 +227,7 @@ async def node_hybrid_recos(state: Dict[str, Any]) -> Dict[str, Any]:
     # prompt="suggest a 3 near restraints from my location for a Plan a family dinner "
 
     #
+
     prompt = (
         f"You are a local recommendation assistant for {targets}. use google maps tool you have to get map urls , Blend to the travel context. "
         f"please use my coordinates to help :\n"
@@ -234,7 +235,7 @@ async def node_hybrid_recos(state: Dict[str, Any]) -> Dict[str, Any]:
         f"Longitude : { res.location.lng} \n'"
         f"Travel reason: {reason}\n"
         f"Sentiment: {sentiment}\n"
-        " Return JSON ONLY : {"
+        " Return 3 results in JSON ONLY : {"
         "\"results\": [{"
         "\"name\": \"str\","
         "\"maps_url\": \"str\","

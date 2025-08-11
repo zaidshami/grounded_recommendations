@@ -52,19 +52,47 @@ async def ask_gemini_grounded(prompt_text: str, lat: float, lng: float) -> dict:
          """
 
     print(prompt_text)
-    body = {
-        # "contents": [{"role": "user", "parts": [{"text": ' suggest a near restronts from my location for a Plan a family dinner '}]}],
-        "contents": [{"role": "user", "parts": [{"text": prompt_text}]}],
-        "model": f"projects/{settings.PROJECT_ID}/locations/{settings.VERTEX_LOCATION}/publishers/google/models/{settings.VERTEX_MODEL_ID}",
-        **maps_tool(lat, lng),
-        "generationConfig": generation_config(),
+    print(_access_token())
+    # body = {
+    #     # "contents": [{"role": "user", "parts": [{"text": ' suggest a near restronts from my location for a Plan a family dinner '}]}],
+    #     "contents": [{"role": "user", "parts": [{"text": prompt_text}]}],
+    #     "model": f"projects/{settings.PROJECT_ID}/locations/{settings.VERTEX_LOCATION}/publishers/google/models/{settings.VERTEX_MODEL_ID}",
+    #     **maps_tool(lat, lng),
+    #     "generationConfig": generation_config(),
+    # }
+    body={
+        "contents": [
+            {
+                "role": "user",
+                "parts": [
+                    {
+              "text":prompt_text
+                    }
+                ]
+            }
+        ],
+        "tools": [
+            {
+                "googleMaps": {}
+            }
+        ],
+        "toolConfig": {
+            "retrievalConfig": {
+                "latLng": {
+                    "latitude":lat,
+                    "longitude":lng
+                }
+            }
+        },
+
+        "model": "projects/gen-lang-client-0475373186/locations/us-central1/publishers/google/models/gemini-2.5-pro"
     }
 
 
     print(body)
     headers = {
         "Authorization": f"Bearer {_access_token()}",
-        "Content-Type": "application/json; charset=utf-8"
+        # "Content-Type": "application/json; charset=utf-8"
     }
     async with httpx.AsyncClient(timeout=120) as client:
         r = await client.post(endpoint(), headers=headers, json=body)
