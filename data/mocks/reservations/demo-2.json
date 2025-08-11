@@ -1,0 +1,21 @@
+{
+  "id": "demo-2",
+  "number_of_guests": 5,
+  "date_from": "2025-09-10",
+  "date_to": "2025-09-12",
+  "length_of_stay": 2,
+  "reason_for_travel_personalization": "Business team offsite; needs wheelchair access.",
+  "reason_for_travel_sentiment_classification": "neutral",
+  "buildings": {
+    "city": "Dubai",
+    "address": "Sheikh Zayed Rd, Dubai"
+  },
+  "additional_guests": [
+    {
+      "name": "Omar",
+      "age": 34,
+      "dietary": "none",
+      "notes": "wheelchair user"
+    }
+  ]
+}

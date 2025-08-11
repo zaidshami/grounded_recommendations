@@ -1,0 +1,16 @@
+
+[Unit]
+Description=Local Recommendation API (Complex Flow + LangChain)
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/local-reco
+EnvironmentFile=/opt/local-reco/.env
+ExecStart=/usr/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips=*
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

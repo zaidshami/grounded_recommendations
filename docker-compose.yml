@@ -1,0 +1,26 @@
+
+version: "3.9"
+services:
+  api:
+    build: .
+    container_name: local-reco-api
+    env_file: .env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcp-sa.json
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./secrets/gcp-sa.json:/secrets/gcp-sa.json:ro
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: local-reco-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    restart: unless-stopped

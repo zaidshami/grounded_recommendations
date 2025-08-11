@@ -1,0 +1,21 @@
+{
+  "id": "demo-1",
+  "number_of_guests": 3,
+  "date_from": "2025-08-15",
+  "date_to": "2025-08-18",
+  "length_of_stay": 3,
+  "reason_for_travel_personalization": "Anniversary trip, prefers quiet ambience, Mediterranean food.",
+  "reason_for_travel_sentiment_classification": "positive",
+  "buildings": {
+    "city": "Riyadh",
+    "address": "King Fahd Rd, Riyadh"
+  },
+  "additional_guests": [
+    {
+      "name": "Sara",
+      "age": 29,
+      "dietary": "halal",
+      "notes": ""
+    }
+  ]
+}
