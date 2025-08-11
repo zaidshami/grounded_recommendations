@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     VERTEX_MODEL_ID: str = "gemini-2.5-pro"
 
     GOOGLE_MAPS_API_KEY: str
-
+#
     KAMRUL_API_BASE: str = "https://api.kamrul.example.com"
     KAMRUL_API_KEY: Optional[str] = None
 
