@@ -10,7 +10,9 @@ from app.services.vertex_maps_grounding import ask_gemini_grounded
 from app.services.maps import place_details
 from app.services.maps_photos import places_photo_url
 from app.config import settings
-
+from typing import Any, Dict
+import re
+import inspect
 def safe_get(d: dict, path: List[str], default=None):
     cur = d
     for p in path:
@@ -88,119 +90,97 @@ async def node_flatten_guests(state: Dict[str, Any]) -> Dict[str, Any]:
     state["additional_guests_flat"] = flatten_additional_guests(resj)
     return state
 
+_BUSINESS_RX = re.compile(
+    r"\b(business|work|working|conference|meeting|meetings|client|clients|trade\s*show|expo|summit|seminar|workshop|onsite|site\s*visit|corporate|sales\s*trip)\b",
+    re.IGNORECASE,
+)
+_LEISURE_RX = re.compile(
+    r"\b(leisure|pleasure|vacation|holiday|honeymoon|tour(ism|ist)?|sightsee(ing)?|beach|resort|family\s*trip)\b",
+    re.IGNORECASE,
+)
+
+
+def _normalize_reason(reason_text: str) -> str:
+    # txt = f"{reason_text or ''}
+    if _BUSINESS_RX.search(reason_text):
+        return "business"
+    if _LEISURE_RX.search(reason_text):
+        return "pleasure"
+    return "unknown"
 async def node_reason_sentiment(state: Dict[str, Any]) -> Dict[str, Any]:
     data = state.get("base_joined", {})
     out = await extract_reason_and_sentiment(data)
     print('zizo')
     print(out)
     state["travel_reason"] = out.get("reason","unknown")
+    # state["travel_reason"] = out['reason']
     state["travel_sentiment"] = out.get("sentiment","unknown")
+    # state["travel_sentiment"] = out['sentiment']
+    print('zizo r ')
+    # state["travel_sentiment"] = _normalize_reason(out.get("reason_label","unknown"))
+
     return state
 
-# async def node_hybrid_recos(state: Dict[str, Any]) -> Dict[str, Any]:
-#     import math, logging
-#     log = logging.getLogger("hybrid_recos")
-#
-#     def _haversine_m(lat1, lng1, lat2, lng2):
-#         R = 6371000.0
-#         p1, p2 = math.radians(lat1), math.radians(lat2)
-#         dphi  = math.radians(lat2 - lat1)
-#         dlmb  = math.radians(lng2 - lng1)
-#         a = math.sin(dphi/2)**2 + math.cos(p1)*math.cos(p2)*math.sin(dlmb/2)**2
-#         return int(2*R*math.asin(math.sqrt(a)))
-#
-#     def _strip_code_fences(s: str) -> str:
-#         s = s.strip()
-#         if s.startswith("```"):
-#             parts = s.split("```")
-#             if len(parts) >= 3:
-#                 s = parts[1]  # content between first and second ```
-#             else:
-#                 s = s.lstrip("`")
-#         # drop a leading language hint line like `json`
-#         lines = s.splitlines()
-#         if lines and lines[0].strip().lower() in {"json", "javascript"}:
-#             s = "\n".join(lines[1:])
-#         return s.strip()
-#
-#     def _collect_vertex_results(vresp: dict) -> list[dict]:
-#         out: list[dict] = []
-#         for cand in (vresp.get("candidates") or []):
-#             content = cand.get("content") or {}
-#             for part in (content.get("parts") or []):
-#                 txt = (part.get("text") or "").strip()
-#                 if not txt:
-#                     continue
-#                 try:
-#                     payload = orjson.loads(_strip_code_fences(txt))
-#                 except Exception:
-#                     continue
-#                 if isinstance(payload, dict) and isinstance(payload.get("results"), list):
-#                     out.extend(payload["results"])
-#                 elif isinstance(payload, list):
-#                     out.extend(payload)
-#         return out
-#
-#     res: Reservation = state["reservation"]
-#     joined = state.get("base_joined", {})
-#     city = (joined.get("fields") or {}).get("buildings.city")
-#     std = _standard_recos_seed(city)
-#
-#     reason = state.get("travel_reason","")
-#     sentiment = state.get("travel_sentiment","")
-#
-#     prompt = (
-#         "You are a local recommendation assistant. Blend to the travel context.\n"
-#         f"Travel reason: {reason}\n"
-#         f"Sentiment: {sentiment}\n"
-#         "Return JSON ONLY with up to 4 items:\n"
-#         "{ \"results\": [ {"
-#         "\"name\":\"str\",\"maps_url\":\"str\",\"place_id\":\"str\",\"address\":\"str\","
-#         "\"lat\":0,\"lng\":0,\"rating\":0,\"user_ratings_total\":0,"
-#         "\"price_level\":0,\"distance_m\":0,\"why\":\"str\",\"cuisine_tags\":[] } ] }"
-#     )
-#
-#     vresp = await ask_gemini_grounded(prompt, res.location.lat, res.location.lng)
-#
-#     # Collect ALL results from ALL candidates/parts
-#     grounded_list = _collect_vertex_results(vresp)
-#
-#     # Compute distance if lat/lng present
-#     for it in grounded_list:
-#         try:
-#             plat, plng = it.get("lat"), it.get("lng")
-#             if plat is not None and plng is not None:
-#                 it["distance_m"] = _haversine_m(res.location.lat, res.location.lng, float(plat), float(plng))
-#         except Exception:
-#             pass
-#
-#     # Merge + dedupe: prefer entries with place_id; fallback to name
-#     merged: list[dict] = []
-#     seen_pid: set[str] = set()
-#     seen_name: set[str] = set()
-#
-#     for x in grounded_list:
-#         pid = (x.get("place_id") or "").strip()
-#         name = (x.get("name") or "").strip()
-#         key_ok = False
-#         if pid and pid not in seen_pid:
-#             seen_pid.add(pid); key_ok = True
-#         elif not pid and name and name.lower() not in seen_name:
-#             seen_name.add(name.lower()); key_ok = True
-#         if key_ok:
-#             merged.append(x)
-#
-#     # Add seed fallbacks (skip if already present)
-#     for s in std:
-#         name = (s.get("name") or "").strip()
-#         if name and name.lower() not in seen_name:
-#             seen_name.add(name.lower())
-#             merged.append(s)
-#
-#     # Optionally trim pre-enrichment for performance
-#     pre_cap = max(settings.GRAPH_MAX_RESULTS * 2, 10)
-#     state["candidates_raw"] = merged[:pre_cap]
-#     return state
+
+def _extract_general_reason(state: Dict[str, str]) -> str:
+    # """
+    # Try multiple likely fields set by `node_reason_sentiment`.
+    # Normalize to: 'business' | 'pleasure' | 'unknown'
+    # """
+    # candidates for where your reason might live
+    print('zizo e')
+    print(state)
+    reason = (
+        state.get("reason")
+        or state.get("general_reason")
+        or state.get("travel_reason")
+        or (state.get("reason") or {}).get("general")
+        or state.get("reason_text")
+        or ""
+    )
+    txt = str(reason).lower().strip()
+
+    print('zizo eddd')
+    print(txt)
+
+
+    # simple patterns; tweak as you see fit
+    if re.search(r"\b(1|business|work|conference|meeting|client|trade\s*show)\b", txt):
+        return "business"
+    if re.search(r"\b(2|anniversary trip|pleasure|vacation|holiday|honeymoon|tourism|tourist)\b", txt):
+        return "pleasure"
+    return "unknown"
+
+async def _call_node(fn, state: Dict[str, Any]) -> Dict[str, Any]:
+    # works whether node is sync or async
+    if inspect.iscoroutinefunction(fn):
+        return await fn(state)
+    return fn(state)
+
+# wrappers that set a flag then call your existing hybrid node
+
+def route_by_reason(state: Dict[str, Any]) -> str:
+
+    tt=_extract_general_reason(state)
+    print('dddd')
+    print(tt)
+    # must return one of the keys used in add_conditional_edges mapping
+    return tt
+
+
+async def node_hybrid_recos_business(state: Dict[str, Any]) -> Dict[str, Any]:
+    print('rrrrrr 111')
+    print(state)
+    state["trip_profile"] = "hotels"
+    return state
+
+async def node_hybrid_recos_pleasure(state: Dict[str, Any]) -> Dict[str, Any]:
+    print('rrrrrr 222')
+    print(state)
+
+    state["trip_profile"] = "restraints"
+    return state
+
 
 async def node_hybrid_recos(state: Dict[str, Any]) -> Dict[str, Any]:
     def _strip_code_fences(s: str) -> str:
@@ -237,19 +217,25 @@ async def node_hybrid_recos(state: Dict[str, Any]) -> Dict[str, Any]:
                 elif isinstance(payload, list):
                     results.extend(payload)
         return results
+    print('phase 1')
     res: Reservation = state["reservation"]
     joined = state.get("base_joined", {})
     city = (joined.get("fields") or {}).get("buildings.city")
     std = _standard_recos_seed(city)
+    print('phase 2')
 
     reason = state.get("travel_reason","")
     sentiment = state.get("travel_sentiment","")
+    targets = state.get("trip_profile","")
+    print('phase 3')
+
     # prompt="suggest a top 3 near restronts from my location for a Plan a family dinner "
     # prompt="suggest a 3 near restraints from my location for a Plan a family dinner "
 
     #
     prompt = (
-        "You are a local recommendation assistant. Blend to the travel context. please use my coordinates to help :\n"
+        f"You are a local recommendation assistant for {targets}. Blend to the travel context. "
+        f"please use my coordinates to help :\n"
         f"Latitude : { res.location.lat} \n'"
         f"Longitude : { res.location.lng} \n'"
         f"Travel reason: {reason}\n"

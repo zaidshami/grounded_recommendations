@@ -7,11 +7,32 @@ from app.schemas import Reservation, RecResponse, Criteria, Place
 from app.utils.logging import configure_logging
 from app.graph.reco_graph import build_graph
 from app.security.auth import api_key_guard
+from pathlib import Path
 
 
 
 log = configure_logging(settings.LOG_LEVEL)
 graph = build_graph()
+path = Path("graph.png")
+# try:
+#     # PNG (requires graphviz + pygraphviz or pydot)
+#     png_bytes = graph.get_graph().draw_png()
+#     path.parent.mkdir(parents=True, exist_ok=True)
+#     path.write_bytes(png_bytes)
+# except Exception as e:
+#     log.warning("draw_png failed (%s). Trying Mermaid fallback…", e)
+#     try:
+#         # If available in your langgraph version
+#         png_bytes = graph.get_graph().draw_mermaid_png()
+#         path.parent.mkdir(parents=True, exist_ok=True)
+#         path.write_bytes(png_bytes)
+#     except Exception:
+#         # Final fallback: write Mermaid source so you can render elsewhere
+#         mmd = graph.get_graph().draw_mermaid()
+#         mmd_path = path.with_suffix(".mmd")
+#         mmd_path.parent.mkdir(parents=True, exist_ok=True)
+#         mmd_path.write_text(mmd, encoding="utf-8")
+#         log.info("Wrote Mermaid to %s (render it with your CI/editor).", mmd_path)
 
 app = FastAPI(title="Local Recommendation API ( Vertex AI + LangChain)", version="1.0.0")
 #
