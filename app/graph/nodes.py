@@ -9,7 +9,7 @@ from app.services.openai_reason_lc import extract_reason_and_sentiment
 from app.services.vertex_maps_grounding import ask_gemini_grounded
 from app.services.maps import place_details
 from app.services.maps_photos import places_photo_url
-from app.config import settings
+from app.config import settings, Settings
 from typing import Any, Dict
 import re
 import inspect
@@ -110,14 +110,9 @@ def _normalize_reason(reason_text: str) -> str:
 async def node_reason_sentiment(state: Dict[str, Any]) -> Dict[str, Any]:
     data = state.get("base_joined", {})
     out = await extract_reason_and_sentiment(data)
-    print('zizo')
     print(out)
     state["travel_reason"] = out.get("reason","unknown")
-    # state["travel_reason"] = out['reason']
     state["travel_sentiment"] = out.get("sentiment","unknown")
-    # state["travel_sentiment"] = out['sentiment']
-    print('zizo r ')
-    # state["travel_sentiment"] = _normalize_reason(out.get("reason_label","unknown"))
 
     return state
 
@@ -128,7 +123,7 @@ def _extract_general_reason(state: Dict[str, str]) -> str:
     # Normalize to: 'business' | 'pleasure' | 'unknown'
     # """
     # candidates for where your reason might live
-    print('zizo e')
+    # print('zizo e')
     print(state)
     reason = (
         state.get("reason")
@@ -140,7 +135,7 @@ def _extract_general_reason(state: Dict[str, str]) -> str:
     )
     txt = str(reason).lower().strip()
 
-    print('zizo eddd')
+    # print('zizo eddd')
     print(txt)
 
 
@@ -169,13 +164,11 @@ def route_by_reason(state: Dict[str, Any]) -> str:
 
 
 async def node_hybrid_recos_business(state: Dict[str, Any]) -> Dict[str, Any]:
-    print('rrrrrr 111')
     print(state)
     state["trip_profile"] = "hotels"
     return state
 
 async def node_hybrid_recos_pleasure(state: Dict[str, Any]) -> Dict[str, Any]:
-    print('rrrrrr 222')
     print(state)
 
     state["trip_profile"] = "restraints"
@@ -183,6 +176,7 @@ async def node_hybrid_recos_pleasure(state: Dict[str, Any]) -> Dict[str, Any]:
 
 
 async def node_hybrid_recos(state: Dict[str, Any]) -> Dict[str, Any]:
+
     def _strip_code_fences(s: str) -> str:
         s = s.strip()
         if s.startswith("```"):
@@ -234,7 +228,7 @@ async def node_hybrid_recos(state: Dict[str, Any]) -> Dict[str, Any]:
 
     #
     prompt = (
-        f"You are a local recommendation assistant for {targets}. Blend to the travel context. "
+        f"You are a local recommendation assistant for {targets}. use google maps tool you have to get map urls , Blend to the travel context. "
         f"please use my coordinates to help :\n"
         f"Latitude : { res.location.lat} \n'"
         f"Longitude : { res.location.lng} \n'"
@@ -259,7 +253,6 @@ async def node_hybrid_recos(state: Dict[str, Any]) -> Dict[str, Any]:
 
 
     vresp = await ask_gemini_grounded(prompt, res.location.lat, res.location.lng)
-    print('zizo 4')
     print(vresp)
 
     parsed_items = _collect_vertex_results(vresp)
@@ -343,7 +336,9 @@ async def node_enrich_candidates(state: Dict[str, Any]) -> Dict[str, Any]:
         price_level = d.get("price_level", c.get("price_level"))
         rating = d.get("rating", c.get("rating"))
         user_ratings_total = d.get("user_ratings_total", c.get("user_ratings_total"))
+        # maps_url = d.get("url") or d.get("website") or c.get("maps_url")
         maps_url = d.get("url") or d.get("website") or c.get("maps_url")
+        # maps_url = get_google_maps_url_from_name(name)
         cuisine_tags = c.get("cuisine_tags") or d.get("types", [])
         why = c.get("why")  # keep model rationale if provided
 
@@ -395,6 +390,32 @@ async def node_enrich_candidates(state: Dict[str, Any]) -> Dict[str, Any]:
 
     state["enriched"] = out
     return state
+
+# import requests
+#
+# def get_place_id(place_name: str) -> str:
+#     url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
+#     params = {
+#         "input": place_name,
+#         "inputtype": "textquery",
+#         "fields": "place_id",
+#         "key": Settings.GOOGLE_MAPS_API_KEY
+#     }
+#     response = requests.get(url, params=params).json()
+#     if response.get("candidates"):
+#         return response["candidates"][0]["place_id"]
+#     return None
+#
+# def get_google_maps_url_from_name(place_name: str) -> str:
+#     place_id = get_place_id(place_name)
+#     if place_id:
+#         return f"https://www.google.com/maps/place/?q=place_id:{place_id}"
+#     return None
+
+# Example usage
+# place_name = "Eiffel Tower"
+#
+# print(url)
 # async def node_enrich_candidates(state: Dict[str, Any]) -> Dict[str, Any]:
 #     out = []
 #     for c in state.get("candidates_raw", []):

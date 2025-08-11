@@ -25,10 +25,32 @@ def maps_tool(lat: float, lng: float) -> dict:
     }
 
 async def ask_gemini_grounded(prompt_text: str, lat: float, lng: float) -> dict:
+    """
+         Uses Grounding with Google Maps in Vertex AI to generate recommendations
 
+         Args:
+             prompt_text (str): The metadata query about user .
+             lat (float): User's current latitude.
+             lng (float): User's current longitude.
 
-    print('zizo 2 ')
-    # print(_access_token())
+         Returns:
+             " Return JSON ONLY : {"
+                "\"results\": [{"
+                "\"name\": \"str\","
+                "\"maps_url\": \"str\","
+                "\"place_id\": \"str\","
+                "\"address\": \"str\","
+                "\"lat\": 0,"
+                "\"lng\": 0,"
+                "\"rating\": 0,"
+                "\"user_ratings_total\": 0,"
+                "\"price_level\": 0,"
+                "\"distance_m\": 0,"
+                "\"why\": \"str\","
+                "\"cuisine_tags\": []"
+                "}]}"
+         """
+
     print(prompt_text)
     body = {
         # "contents": [{"role": "user", "parts": [{"text": ' suggest a near restronts from my location for a Plan a family dinner '}]}],
@@ -48,3 +70,5 @@ async def ask_gemini_grounded(prompt_text: str, lat: float, lng: float) -> dict:
         r = await client.post(endpoint(), headers=headers, json=body)
         r.raise_for_status()
         return r.json()
+
+
