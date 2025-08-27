@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Agent</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gemini Agent - Roberto 6</h1>
+            <p>Test your AI-powered guest recommendation system</p>
+        </div>
+
+        <div class="content">
+            <!-- Shared Reservation Data Section -->
+            <div class="shared-section">
+                <h3> Reservation Data</h3>
+                <p>Fetch reservation data to enable both direct recommendations and chat functionality.</p>
+                
+                <div class="form-group">
+                    <label for="shared-reservation-id">Reservation ID:</label>
+                    <input type="text" id="shared-reservation-id" value="142766272" placeholder="Enter reservation ID">
+                </div>
+                
+                <button class="btn btn-success" onclick="fetchReservationData()">Fetch Reservation Data</button>
+                
+                <!-- Guest Information Display -->
+                <div id="guest-info" class="guest-info" style="display: none;">
+                    <h4>Guest Information</h4>
+                    <div id="guest-info-content"></div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('recommendations')">Direct Recommendations</div>
+                <div class="tab" onclick="switchTab('chat')">Chat Interface</div>
+            </div>
+
+            <!-- Direct Recommendations Tab -->
+            <div id="recommendations" class="tab-content active">
+                <h2>Direct Recommendations</h2>
+                <p style="margin-bottom: 20px; color: #666;">Generate personalized recommendations based on reservation data.</p>
+                
+                <div class="form-group">
+                    <label for="rec-max-recommendations">Max Recommendations:</label>
+                    <select id="rec-max-recommendations">
+                        <option value="3">3</option>
+                        <option value="5" selected>5</option>
+                        <option value="7">7</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="rec-categories">Categories:</label>
+                    <input type="text" id="rec-categories" value="restaurants,activities" placeholder="restaurants,activities,shopping">
+                </div>
+
+                <div class="form-group">
+                    <label for="rec-radius">Search Radius (miles):</label>
+                    <input type="number" id="rec-radius" value="5.0" min="0.5" max="50" step="0.5">
+                </div>
+
+                <button class="btn" onclick="generateRecommendations()">Generate Recommendations</button>
+
+                <div id="rec-response" class="response-area" style="display: none;">
+                    <h3>Recommendations Response</h3>
+                    <div id="rec-status" class="status"></div>
+                    <div id="rec-content" class="response-content" style="display: none;"></div>
+                    
+                    <!-- Walking Time Info -->
+                    <div style="background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin: 20px 0; font-size: 14px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0c5460;">🚶 Distance & Walking Time Information</h4>
+                        <p style="margin: 5px 0; color: #0c5460;">
+                            <strong>Real distances and walking times calculated using Google Maps API:</strong><br>
+                            • Distances show actual walking routes from Aura New Haven Hotel<br>
+                            • Walking times are based on real walking directions<br>
+                            • Only displayed when successfully calculated<br>
+                            • All times are approximate and may vary based on terrain and walking conditions
+                        </p>
+
+                    </div>
+                    
+                    <div id="recommendations-grid" class="recommendations-grid"></div>
+                </div>
+            </div>
+
+            <!-- Chat Tab -->
+            <div id="chat" class="tab-content">
+                <h2>Interactive Chat</h2>
+                <p style="margin-bottom: 20px; color: #666;">Chat with the AI to request specific recommendations.</p>
+                
+                <div class="form-group">
+                    <label>Chat Interface:</label>
+                    <div class="chat-input-container">
+                        <textarea id="chat-message" placeholder="Type your message here...">Hello! I'm looking for recommendations for my stay</textarea>
+                        <button class="btn btn-primary send-btn" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Conversation History:</label>
+                    <div id="conversation-history" class="conversation-history">
+                        <!-- Conversation will start here when messages are sent -->
+                    </div>
+                    <button class="btn btn-secondary" onclick="clearHistory()" style="margin-top: 10px;">Clear History</button>
+                </div>
+
+                <div id="chat-response" class="response-area" style="display: none;">
+                    <h3>Chat Response</h3>
+                    <div id="chat-status" class="status"></div>
+                    <div id="chat-content" class="response-content" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/ui.js"></script>
+</body>
+</html>

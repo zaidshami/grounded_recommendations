@@ -1,0 +1,44 @@
+# Core FastAPI and web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# LangChain and AI dependencies
+langchain>=0.1.14
+langchain-core>=0.1.45
+langchain-google-vertexai>=0.1.0
+
+# Google Cloud dependencies
+google-cloud-aiplatform>=1.38.0
+google-auth>=2.23.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.1.0
+
+# HTTP and data processing
+requests>=2.31.0
+httpx>=0.25.0
+
+# Data handling and validation
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+pandas>=2.0.0
+
+# Date and time handling
+icalendar>=5.0.0
+pytz>=2023.3
+
+# Google services
+google-auth 
+google-auth-oauthlib 
+google-auth-httplib2 
+google-api-python-client
+
+# Microsoft services
+msal
+
+# AWS services
+boto3>=1.34.0
+
+# Additional utilities
+python-multipart>=0.0.6
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
